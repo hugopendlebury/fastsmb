@@ -29,7 +29,7 @@ jobs:
     - name: Install libsmb
       run: sudo apt update && sudo apt install -y libsmbclient-dev libsmbclient
     - name: Install maturn
-      run: sudo apt pip install maturin
+      run: sudo pip install maturin
       #- name: Setup containers
       #  run: docker-compose -f "tests/docker-compose.yml" up -d --build
     - uses: actions-rs/toolchain@v1
