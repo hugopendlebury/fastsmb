@@ -38,7 +38,7 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Build
-      run: maturin build
+      run: maturin build --interpreter ${{ matrix.python-version }} --skip-auditwheel
     #- name: Build
 
     #  uses: actions-rs/cargo@v1
