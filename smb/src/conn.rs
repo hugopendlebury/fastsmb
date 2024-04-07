@@ -102,7 +102,7 @@ impl Connection {
                                 let mut iter = ByteSliceIter::new(src_file, 1000000);
                                 while let Some(chunk) = iter.next()? {
                                     info!("Got chunk");
-                                    let result = file.write(chunk);
+                                    let _result = file.write(chunk);
 
                                 }
                                 Ok(true.into_py(py))

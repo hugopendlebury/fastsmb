@@ -38,7 +38,7 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Build
-      run: maturin build --release
+      run: maturin build
     #- name: Build
 
     #  uses: actions-rs/cargo@v1
