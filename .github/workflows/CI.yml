@@ -46,7 +46,6 @@ jobs:
         path: dist
     - name: upload release to PyPI
       id: mint-token
-      runs-on: ubuntu-latest
       run: |
         # retrieve the ambient OIDC token
         resp=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
