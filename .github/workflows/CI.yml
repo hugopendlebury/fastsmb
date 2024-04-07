@@ -26,12 +26,31 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         architecture: x64
-    - name: Build wheels
-      uses: PyO3/maturin-action@v1
+    - name: Install libsmb
+      run: sudo apt update && sudo apt install -y libsmbclient-dev libsmbclient
+    - name: Install maturn
+      run: sudo apt pip install maturin
+      #- name: Setup containers
+      #  run: docker-compose -f "tests/docker-compose.yml" up -d --build
+    - uses: actions-rs/toolchain@v1
       with:
-        target: ${{ matrix.target }}
-        manylinux: auto
-        args: --release --out dist --interpreter ${{ matrix.python-version }}
+        toolchain: stable
+        override: true
+        components: rustfmt, clippy
+    -name: Build
+     run: maturin build --release
+    #- name: Build
+
+    #  uses: actions-rs/cargo@v1
+    #    command: build
+    #  with:
+    #    args: --all-targets
+    #- name: Build wheels
+    #  uses: PyO3/maturin-action@v1
+    #  with:
+    #    target: ${{ matrix.target }}
+    #   args: --release --out dist --interpreter ${{ matrix.python-version }}
+    ##    manylinux: auto
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
