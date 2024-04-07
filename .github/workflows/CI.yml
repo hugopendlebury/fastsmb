@@ -32,8 +32,8 @@ jobs:
       - name: Install libsmbclient
         if: matrix.target == 'x86_64'
         run: |
-          apt-get update
-          apt-get install libsmbclient-dev libsmbclient
+          sudo apt-get update
+          sudo apt-get install -y libsmbclient-dev libsmbclient
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
