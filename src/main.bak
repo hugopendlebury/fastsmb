@@ -1,0 +1,141 @@
+use pavao::{SmbClient, SmbCredentials, SmbError, SmbFile, SmbOpenOptions, SmbOptions};
+use rayon::str::Bytes;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io;
+use std::path::Path;
+use std::error::Error;
+use std::io::{BufReader, Read};
+
+
+
+fn vector_to_array<T, const N: usize>(v: Vec<T>) -> [T; N] {
+    v.try_into()
+        .unwrap_or_else(|v: Vec<T>| panic!("Expected a Vec of length {} but it was {}", N, v.len()))
+}
+
+fn read_file_as_single_bytes(path: &str, target_file: &mut SmbFile) -> Result<(), Box<dyn std::error::Error>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    const BUFFER_SIZE: usize = 1000000;
+    let buffer_limit = BUFFER_SIZE - 1;
+    //let mut bytes = vec![0; BUFFER_SIZE];
+
+    let mut bytes: [u8; BUFFER_SIZE] =  [0; BUFFER_SIZE];
+    let mut position = 0;
+    let mut totalByes = 0;
+    let mut sentBytes = 0;
+    
+
+
+    for byte in reader.bytes() {
+        match byte {
+            // byte is exactly one byte
+            Ok(byte) => {
+                if position < BUFFER_SIZE {
+                    bytes[position] = byte;
+                } else {
+                    println!("Sending at position {}", position);
+                    target_file.write(&bytes);
+                    sentBytes += position + 1;
+                    position = 0;
+                    //process and reset vec
+                    bytes = [0; BUFFER_SIZE];
+                    bytes[position] = byte;
+                }
+                totalByes += 1;
+                position += 1;
+            }
+            Err(err) => panic!("UNABLE TO READ FILE {}",err),
+        }
+    }
+
+    println!("remaining bytes = {}", position);
+    println!("Read {} bytes", totalByes);
+
+    let payload_size: u64 = <usize as TryInto<u64>>::try_into(position).unwrap() + 1;
+    sentBytes +=  <u64 as TryInto<usize>>::try_into(payload_size).unwrap();
+
+    println!("sent {} bytes", sentBytes);
+
+    let mut final_payload = bytes.take(payload_size);
+    target_file.write(final_payload.fill_buf().unwrap());
+
+    Ok(())
+}
+
+
+
+
+
+fn main() -> Result<(),SmbError> {
+    // Initialize a new client
+    let client = SmbClient::new(
+        SmbCredentials::default()
+            .server("smb://localhost:3445")
+            .password("test")
+            .username("test"),
+
+        SmbOptions::default().one_share_per_server(false),
+    )?;
+    
+    println!("Yo");
+
+    let user = client.get_user();
+    match user {
+        Ok(v) => println!("{}", v),
+        Err(e) => { 
+            print!("Oh No {}", e) ;
+        }
+    }
+
+   
+    let name = client.get_netbios_name();
+    match name {
+        Ok(v) => println!("{}", v),
+        Err(e) => print!("{}", e),
+    }
+
+
+    let dir = client.list_dir("/temp");
+    match dir {
+        Ok(v) => {
+            v.into_iter().for_each(|f| {
+                let name = f.name();
+                println!("{}", name);
+            })
+        }
+        Err(e) => print!("OH NO ERROR LISTING DIR {}", e),
+    }
+
+    let options = SmbOpenOptions::default().create(true).write(true);
+
+    let mut file = &mut client.open_with("/temp/test.txt", options).unwrap();
+
+    //let buf = "hello from me".as_bytes();
+    //file.write(buf);
+
+
+    // Open file to read
+    //let mut reader = File::open(Path::new("/var/tmp/hptest.csv")).unwrap();
+    // Open file to write
+    let mut writer = client
+        .open_with(
+            "/temp/test.txt",
+            SmbOpenOptions::default().create(true).write(true),
+        )
+        .unwrap();
+
+
+    read_file_as_single_bytes("/var/tmp/hptest.csv", file);
+
+
+    // do anything you want here with client
+    //let mut file = client.open_with("/abc/test.txt", SmbOpenOptions::default().read(true)).unwrap();
+    // read file...
+    drop(file);
+    // disconnect from server
+    //drop(client);
+
+    Ok(())
+}

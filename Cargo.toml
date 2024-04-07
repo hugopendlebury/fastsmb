@@ -1,0 +1,29 @@
+[package]
+name = "fastsmb"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "fastsmb"
+crate-type = ["cdylib"]
+
+[package.metadata.maturin]
+python-source = "fastsmb"
+
+[dependencies]
+pyo3 = { version = "0.20.0", features = ["extension-module"] }
+pyo3-log = "0.9.0"
+log="0.4.17"
+rayon = "1.8.0"
+concurrent-queue = "2.3.0"
+pavao = "0.2.5"
+# my packages
+py_types = { path = "py_types"}
+smb = { path = "smb" }
+
+[workspace]
+members = ["smb/", "py_types/"]
+
+

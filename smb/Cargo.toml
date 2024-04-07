@@ -1,0 +1,17 @@
+[package]
+name = "smb"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pyo3 = { version = "0.20.0", features = ["extension-module"] }
+pyo3-log = "0.9.0"
+log="0.4.17"
+rayon = "1.8.0"
+py_types = { path = "../py_types"}
+read-byte-slice = "0.1.2"
+pavao = "0.2.5"
+
+
+[dev-dependencies]
+tokio = { version = "1.28.0", features = ["macros"] }
